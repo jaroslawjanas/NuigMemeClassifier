@@ -3,6 +3,8 @@ import math
 import os
 
 # from https://github.com/opencv/opencv/blob/1f726e81f91746e16f4a6110681658f8709e7dd2/samples/dnn/text_detection.py#L86
+# This function is used to extract the bounding box coordinates of a text region
+# and the probability of a text region detection
 def decodeBoundingBoxes(scores, geometry, scoreThresh):
     detections = []
     confidences = []
@@ -61,6 +63,14 @@ def decodeBoundingBoxes(scores, geometry, scoreThresh):
 
 # Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
 def image_processing(img_path):
+    # params
+    conf_threshold = 0.65
+    # Non Max Suppression
+    # Higher value will result in more boxes
+    # https://towardsdatascience.com/non-maximum-suppression-nms-93ce178e177c
+    # https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/
+    nms_threshold = 0.2
+
     # Read image
     image = cv2.imread(img_path)
     height, width = image.shape[:2]
@@ -68,28 +78,30 @@ def image_processing(img_path):
 
     # Display image
     cv2.imshow('Original Image', image)
+    print('Original dimensions: ', dimensions)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    # Calculate new dimensions (multiple of 32, required by EAST)
+    # Calculate new dimensions (multiple of 32, required by EAST detector)
     new_width = math.floor(width/32)*32
     new_height = math.floor(height/32)*32
     new_dimensions = (new_width, new_height)
 
     # Display new image
-    image = cv2.resize(image, dimensions)
-    cv2.imshow('Resized mod(32)px image', image)
+    image_resized = cv2.resize(image, new_dimensions)
+    cv2.imshow('Resized mod(32)px image', image_resized)
+    print('New dimensions: ', new_dimensions)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    # Load the NN 
+    # Load the NN model
     # https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-OpenCV
     dirpath = os.path.dirname(__file__)
     nn_model_path = os.path.join(dirpath, 'text_detection_nnModel/frozen_east_text_detection.pb')
     net = cv2.dnn.readNet(nn_model_path)
 
     # prepare image input - convert to 4D blob
-    img_blob = cv2.dnn.blobFromImage(image, 1.0, new_dimensions, (123.68, 116.78, 103.94), True, False)
+    img_blob = cv2.dnn.blobFromImage(image_resized, 1.0, new_dimensions, (123.68, 116.78, 103.94), True, False)
 
     # Output layers, text geometry and confidence
     output_layers = []
@@ -99,34 +111,39 @@ def image_processing(img_path):
     # Forward Feed
     net.setInput(img_blob)
     output = net.forward(output_layers)
-    scores, geometry = output[:2] #unpack
+    # geometry - map used to derive the bounding box coordinates of text in the image
+    # scores = map, containing the probability of a given region containing text
+    scores, geometry = output[:2]  # unpack
 
-    conf_threshold = 0.45
-    # Non Max Suppression
-    # Higher value will result in more boxes
-    # https://towardsdatascience.com/non-maximum-suppression-nms-93ce178e177c
-    # https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/
-    nms_threshold = 0.2
+    # boxes = shapes with text in them
+    # confidences = level of confidence that a box contains text
     [boxes, confidences] = decodeBoundingBoxes(scores, geometry, conf_threshold)
-    indices = cv2.dnn.NMSBoxesRotated(boxes, confidences, conf_threshold, nms_threshold)
+    # these are the indices of the boxes that we want to keep after thresholding
+    box_indices = cv2.dnn.NMSBoxesRotated(boxes, confidences, conf_threshold, nms_threshold)
 
-    height_ = image.shape[0]
-    width_ = image.shape[1]
-    rW = width_ / float(new_width)
-    rH = height_ / float(new_height)
+    # calculate ratio of dimensions - since we want to display bounding boxes from a smaller image
+    # on the original bigger image
+    rW = width / float(new_width)
+    rH = height / float(new_height)
 
-    for i in indices:
+    # loop through kept boxes
+    bounding_boxes = []
+    for i in box_indices:
         # get 4 corners of the rotated rect
         vertices = cv2.boxPoints(boxes[i[0]])
-        # scale the bounding box coordinates based on the respective ratios
-        for j in range(4):
-            vertices[j][0] *= rW
-            vertices[j][1] *= rH
-        for j in range(4):
-            p1 = (vertices[j][0], vertices[j][1])
-            p2 = (vertices[(j + 1) % 4][0], vertices[(j + 1) % 4][1])
-            cv2.line(image, p1, p2, (0, 255, 0), 3)
 
+        # scale the bounding box coordinates based on the respective ratios
+
+        for j in range(4):
+            vertices[j][0] *= rW  # rescale width
+            vertices[j][1] *= rH  # rescale height
+
+        # construct bounding boxes
+        p1 = (vertices[0][0], vertices[0][1])
+        p2 = (vertices[2][0], vertices[2][1])
+        bounding_boxes.append((p1, p2))
+        # cv2.line(image, p1, p2, (0, 255, 0), 3)
+        cv2.rectangle(image, p1, p2, (255, 170, 0), 1)
 
     # Display image
     cv2.imshow('Text Detection Output', image)
