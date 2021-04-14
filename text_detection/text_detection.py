@@ -1,19 +1,19 @@
 import cv2
-import math
 import os
 from text_detection.decode_bounding_boxes import *
 from text_detection.box_grouping import *
+
 
 # Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
 # and https://www.pyimagesearch.com/2018/08/20/opencv-text-detection-east-text-detector/
 def image_processing(img_path):
     # params
-    conf_threshold = 0.7
+    conf_threshold = 0.81
     # Non Max Suppression
-    # Higher value will result in more boxes
+    # Higher value will result in more boxes - suppresses weak overlapping bounding boxes
     # https://towardsdatascience.com/non-maximum-suppression-nms-93ce178e177c
     # https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/
-    nms_threshold = 0.75
+    nms_threshold = 0.73
 
     # Read image
     raw_image = cv2.imread(img_path)
@@ -27,16 +27,13 @@ def image_processing(img_path):
     cv2.destroyAllWindows()
 
     # Calculate new dimensions (multiple of 32, required by EAST detector)
-    new_width = math.floor(width/32)*32
-    new_height = math.floor(height/32)*32
+    new_width = math.floor(width / 32) * 32
+    new_height = math.floor(height / 32) * 32
     new_dimensions = (new_width, new_height)
 
-    # Display new image
+    # Image resize
     image_resized = cv2.resize(raw_image, new_dimensions)
-    # cv2.imshow('Resized mod(32)px image', image_resized)
     print('New dimensions: ', new_dimensions)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
     # Load the NN model
     # https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-OpenCV
@@ -83,7 +80,6 @@ def image_processing(img_path):
             vertices[j][0] *= rW  # rescale width
             vertices[j][1] *= rH  # rescale height
 
-
         # construct bounding boxes
         #  p1------------------p2
         #  |                   |
@@ -104,7 +100,7 @@ def image_processing(img_path):
     cv2.destroyAllWindows()
 
     # group bounding boxes
-    grouped_bounding_boxes = box_grouping(bounding_boxes, width/12, height/12)
+    grouped_bounding_boxes = box_grouping(bounding_boxes, width/10, height/10)
 
     grouped_boxes_img = raw_image
     for box in grouped_bounding_boxes:
