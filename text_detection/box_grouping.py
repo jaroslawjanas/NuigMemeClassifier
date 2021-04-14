@@ -19,6 +19,15 @@ def box_grouping(bounding_boxes, x_range, y_range):
 
 
 def find_boxes_to_be_grouped(bounding_boxes, x_range, y_range):
+    closest_box = {
+        'distance': 99999999,
+        'box1': None,
+        'box2': None
+    }
+    collision_box = {
+        'box1': None,
+        'box2': None
+    }
     # loop bounding boxes
     for box1 in bounding_boxes[:]:
         # for each point of the box
@@ -29,11 +38,30 @@ def find_boxes_to_be_grouped(bounding_boxes, x_range, y_range):
                     continue
                 # for each point of box2
                 for pp in box2:
+                    # distance merge
                     x_distance = abs(p[0] - pp[0])
                     y_distance = abs(p[1] - pp[1])
                     # boxes satisfying this condition should be merged
+                    # in order from smallest to biggest distance
                     if x_distance < x_range and y_distance < y_range:
-                        return [box1, box2]
+                        dist = math.sqrt(math.pow(x_distance, 2) + math.pow(y_distance, 2))
+                        if dist < closest_box['distance']:
+                            closest_box['distance'] = dist
+                            closest_box['box1'] = box1
+                            closest_box['box2'] = box2
+
+                    # if box collision - this will be dealt with only when
+                    # there are no more closest boxes to join
+                    if box1[0][0] < pp[0] < box1[2][0] and box1[0][1] < pp[1] < box1[2][1]:
+                        collision_box['box1'] = box1
+                        collision_box['box2'] = box2
+
+    if closest_box['box1'] is not None and closest_box['box2'] is not None:
+        return [closest_box['box1'], closest_box['box2']]
+    # only do box collision if there are no closest boxes left to join
+    elif collision_box['box1'] is not None and collision_box['box2'] is not None:
+        return [collision_box['box1'], collision_box['box2']]
+
     return None
 
 

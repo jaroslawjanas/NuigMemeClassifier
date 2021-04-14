@@ -5,14 +5,15 @@ from text_detection.decode_bounding_boxes import *
 from text_detection.box_grouping import *
 
 # Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
+# and https://www.pyimagesearch.com/2018/08/20/opencv-text-detection-east-text-detector/
 def image_processing(img_path):
     # params
-    conf_threshold = 0.65
+    conf_threshold = 0.7
     # Non Max Suppression
     # Higher value will result in more boxes
     # https://towardsdatascience.com/non-maximum-suppression-nms-93ce178e177c
     # https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/
-    nms_threshold = 0.2
+    nms_threshold = 0.75
 
     # Read image
     raw_image = cv2.imread(img_path)
@@ -32,10 +33,10 @@ def image_processing(img_path):
 
     # Display new image
     image_resized = cv2.resize(raw_image, new_dimensions)
-    cv2.imshow('Resized mod(32)px image', image_resized)
+    # cv2.imshow('Resized mod(32)px image', image_resized)
     print('New dimensions: ', new_dimensions)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     # Load the NN model
     # https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-OpenCV
@@ -103,7 +104,7 @@ def image_processing(img_path):
     cv2.destroyAllWindows()
 
     # group bounding boxes
-    grouped_bounding_boxes = box_grouping(bounding_boxes, width/3, height/3)
+    grouped_bounding_boxes = box_grouping(bounding_boxes, width/12, height/12)
 
     grouped_boxes_img = raw_image
     for box in grouped_bounding_boxes:
