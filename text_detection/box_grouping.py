@@ -53,22 +53,18 @@ def find_boxes_to_be_grouped(bounding_boxes, x_range, y_range):
 
 # function to merge two boxes
 def box_group(boxes_to_be_grouped):
-    temp_boxes_to_be_grouped = boxes_to_be_grouped[:]
+    all_x_values = []
+    all_y_values = []
+    
+    for box in boxes_to_be_grouped:
+        for point in box:
+            all_x_values.append(point[0])
+            all_y_values.append(point[1])
 
-    while len(temp_boxes_to_be_grouped) >= 2:
-        temp_boxes_to_be_grouped.append(group_two(temp_boxes_to_be_grouped[0], temp_boxes_to_be_grouped[1]))
-        # remove first two elements
-        temp_boxes_to_be_grouped = temp_boxes_to_be_grouped[2:]
-
-    return temp_boxes_to_be_grouped[0]
-
-
-def group_two(box1, box2):
-    # find the biggest and smallest [x, y] values
-    x_min = min(box1[0][0], box2[0][0])
-    x_max = max(box1[2][0], box2[2][0])
-    y_min = min(box1[0][1], box2[0][1])
-    y_max = max(box1[2][1], box2[2][1])
+    x_min = min(all_x_values)
+    x_max = max(all_x_values)
+    y_min = min(all_y_values)
+    y_max = max(all_y_values)
 
     p1 = (x_min, y_min)
     p2 = (x_max, y_min)
