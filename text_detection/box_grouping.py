@@ -55,7 +55,7 @@ def find_boxes_to_be_grouped(bounding_boxes, x_range, y_range):
 def box_group(boxes_to_be_grouped):
     all_x_values = []
     all_y_values = []
-    
+
     for box in boxes_to_be_grouped:
         for point in box:
             all_x_values.append(point[0])

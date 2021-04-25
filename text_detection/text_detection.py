@@ -6,7 +6,7 @@ from text_detection.box_grouping import *
 
 # Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
 # and https://www.pyimagesearch.com/2018/08/20/opencv-text-detection-east-text-detector/
-def image_processing(img_path):
+def text_detection(raw_image):
     # params
     conf_threshold = 0.81
     # Non Max Suppression
@@ -15,8 +15,7 @@ def image_processing(img_path):
     # https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/
     nms_threshold = 0.73
 
-    # Read image
-    raw_image = cv2.imread(img_path)
+    # image properties
     height, width = raw_image.shape[:2]
     dimensions = (width, height)
 
@@ -37,8 +36,8 @@ def image_processing(img_path):
 
     # Load the NN model
     # https://github.com/ZER-0-NE/EAST-Detector-for-text-detection-using-OpenCV
-    dirpath = os.path.dirname(__file__)
-    nn_model_path = os.path.join(dirpath, 'text_detection_nnModel/frozen_east_text_detection.pb')
+    dir_path = os.path.dirname(__file__)
+    nn_model_path = os.path.join(dir_path, 'text_detection_nnModel/frozen_east_text_detection.pb')
     net = cv2.dnn.readNet(nn_model_path)
 
     # prepare image input - convert to 4D blob
@@ -75,37 +74,50 @@ def image_processing(img_path):
         vertices = cv2.boxPoints(boxes[i[0]])
 
         # scale the bounding box coordinates based on the respective ratios
-
         for j in range(4):
-            vertices[j][0] *= rW  # rescale width
-            vertices[j][1] *= rH  # rescale height
+            vertices[j][0] = round(vertices[j][0] * rW)  # rescale width
+            if vertices[j][0] < 0:
+                vertices[j][0] = 0
+            elif vertices[j][0] > width:
+                vertices[j][0] = width
+
+            vertices[j][1] = round(vertices[j][1] * rH)  # rescale height
+            if vertices[j][1] < 0:
+                vertices[j][1] = 0
+            elif vertices[j][1] > height:
+                vertices[j][1] = height
+
 
         # construct bounding boxes
         #  p1------------------p2
         #  |                   |
         #  |                   |
         #  p4------------------p3
-        p1 = (vertices[1][0], vertices[1][1])
-        p2 = (vertices[2][0], vertices[2][1])
-        p3 = (vertices[3][0], vertices[3][1])
-        p4 = (vertices[0][0], vertices[0][1])
+        p1 = (int(round(vertices[1][0])), int(round(vertices[1][1])))
+        p2 = (int(round(vertices[2][0])), int(round(vertices[2][1])))
+        p3 = (int(round(vertices[3][0])), int(round(vertices[3][1])))
+        p4 = (int(round(vertices[0][0])), int(round(vertices[0][1])))
         bounding_boxes.append([p1, p2, p3, p4])
 
         # draw all bounding boxes
         cv2.rectangle(bb_image, p1, p3, (255, 170, 0), 2)
 
     # Display image
-    cv2.imshow('Text Detection Output', bb_image)
+    cv2.imshow('Text Detection', bb_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
     # group bounding boxes
+    # boxes, x-range, y-range
     grouped_bounding_boxes = box_grouping(bounding_boxes, width/10, height/10)
 
-    grouped_boxes_img = raw_image
+    grouped_boxes_img = raw_image.copy()
     for box in grouped_bounding_boxes:
         cv2.rectangle(grouped_boxes_img, box[0], box[2], (255, 170, 0), 2)
 
-    cv2.imshow('Text Detection Output', grouped_boxes_img)
+    # show image with bounding boxes
+    cv2.imshow('Grouped Text Detection', grouped_boxes_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    return grouped_bounding_boxes
