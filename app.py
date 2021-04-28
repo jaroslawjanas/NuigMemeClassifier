@@ -18,3 +18,4 @@ for i in range(1, 17):
     text_recognition(bounding_boxes, raw_image, config)
 
 
+
