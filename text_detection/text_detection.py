@@ -6,14 +6,14 @@ from text_detection.box_grouping import *
 
 # Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
 # and https://www.pyimagesearch.com/2018/08/20/opencv-text-detection-east-text-detector/
-def text_detection(raw_image):
+def text_detection(raw_image, config):
     # params
-    conf_threshold = 0.81
+    conf_threshold = config['text_detection']['confidence_threshold'] #0.63
     # Non Max Suppression
     # Higher value will result in more boxes - suppresses weak overlapping bounding boxes
     # https://towardsdatascience.com/non-maximum-suppression-nms-93ce178e177c
     # https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/
-    nms_threshold = 0.73
+    nms_threshold = config['text_detection']['nms_threshold'] #0.77
 
     # image properties
     height, width = raw_image.shape[:2]

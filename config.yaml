@@ -1,2 +1,10 @@
 tesseract:
   path: 'G:\FYP\Tesseract-OCR\tesseract.exe'
+
+text_detection:
+  confidence_threshold: 0.03
+  nms_threshold: 0.96
+
+data:
+  templates:
+    path: 'G:\FYP\imgflip-scrapper\data\templates\'

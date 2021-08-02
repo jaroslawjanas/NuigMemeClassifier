@@ -38,31 +38,41 @@ def text_image_processing(text_image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    if mean > 184:
+    # if black text on white background - easy to threshold
+    if mean > 180:
         _, processed_image = cv2.threshold(processed_image, 190, 255, cv2.THRESH_BINARY)
+    # if white text on mixed background - hard to find threshold for
     else:
-        _, processed_image = cv2.threshold(processed_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        # processed_image = cv2.adaptiveThreshold(processed_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 91, 3)
+        counter = 0
+        threshold_value = 200
+        while True:
+            counter += 1
+            _, temp_processed_image = cv2.threshold(processed_image, threshold_value, 255, cv2.THRESH_BINARY_INV)
+            mean = cv2.mean(temp_processed_image)[0]
+            print("  Mean after ths: ", mean)
+            print("  Threshold value: ", threshold_value)
+            # _, processed_image = cv2.threshold(processed_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+            # processed_image = cv2.adaptiveThreshold(processed_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 101, -10)
 
-    cv2.imshow("Text image", processed_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+            if counter > 20:
+                _, processed_image = cv2.threshold(processed_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                break
+            elif mean < 50:
+                threshold_value += 5
+            elif mean > 200:
+                threshold_value -= 5
+            else:
+                processed_image = temp_processed_image
+                break
 
-    image_area = width*height
-    print("  Text image area: ",image_area)
-    # use weaker dilation for small text images
-    if image_area < 20000 or height < 100:
-        print("  Image size: Small")
-        processed_image = cv2.dilate(processed_image, (3, 3), iterations=3)
-    # use medium dilation for medium sized text images
-    elif image_area < 40000 or height < 170:
-        print("  Image size: Medium")
-        processed_image = cv2.dilate(processed_image, (5, 5), iterations=3)
-    # use strong dilation for big images
-    else:
-        print("  Image size: Large")
-        processed_image = cv2.dilate(processed_image, (9, 9), iterations=5)
+        cv2.imshow("Text image", processed_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
+        # if image was hard to find threshold for don't dilate
+        # as it's most likely of poor quality
+        if counter < 2:
+            processed_image = cv2.dilate(processed_image, (3, 3), iterations=2)
 
     cv2.imshow("Text image", processed_image)
     cv2.waitKey(0)
