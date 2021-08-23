@@ -4,7 +4,7 @@ from text_detection.decode_bounding_boxes import *
 from text_detection.box_grouping import *
 
 
-# Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
+#te Based on https://stackoverflow.com/questions/54821969/how-to-make-bounding-box-around-text-areas-in-an-image-even-if-text-is-skewed
 # and https://www.pyimagesearch.com/2018/08/20/opencv-text-detection-east-text-detector/
 def text_detection(raw_image, config):
     # params
@@ -41,7 +41,7 @@ def text_detection(raw_image, config):
     net = cv2.dnn.readNet(nn_model_path)
 
     # prepare image input - convert to 4D blob
-    img_blob = cv2.dnn.blobFromImage(image_resized, 1.0, new_dimensions, (123.68, 116.78, 103.94), True, False)
+    img_blob = cv2.dnn.blobFromImage(image_resized, 1.0, new_dimensions, (0, 0, 0), True, False)
 
     # Output layers, text geometry and confidence
     output_layers = []

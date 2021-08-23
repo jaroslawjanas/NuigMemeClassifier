@@ -71,8 +71,8 @@ def text_image_processing(text_image):
 
         # if image was hard to find threshold for don't dilate
         # as it's most likely of poor quality
-        if counter < 2:
-            processed_image = cv2.dilate(processed_image, (3, 3), iterations=2)
+        if counter < 3:
+            processed_image = cv2.dilate(processed_image, (3, 3), iterations=1)
 
     cv2.imshow("Text image", processed_image)
     cv2.waitKey(0)
