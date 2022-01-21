@@ -327,9 +327,9 @@ A config file was used to set necessary parameters such as a save location, time
 #### 3.8.2 Template Collection
 Using the https://imgflip.com/memetemplates URL as the entry point, the program will use the HTML tags and CSS classes to identify links pointing to each meme template. Upon identification of such link, the link’s title and the page address are kept. Since only non-image files are to be collected, each address is entered, and the format of the template image is checked. If the image is found to be in PNG or JPG format, it will be saved into a folder, with the folder name acting as the name of the template, as shown in `Figure 11` and `Figure 12`.
 
-![Figure 10](readme_images/figure_10.png)
-
 ![Figure 11](readme_images/figure_11.png)
+
+![Figure 12](readme_images/figure_12.png)
 
 #### 3.8.3 Meme Collection
 Alongside the existing template collection program, another functionality was developed to collect examples of each template used. The template program creates a map that links category names and their respective URLs. Using this map, each category can be quickly scrapped for images. An upper limit of pages the program will go through in each category was specified in the config.
