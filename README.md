@@ -318,7 +318,7 @@ If the number of matches of the selected template falls under a specified value,
 
 ![Figure 10](readme_images/figure_10.png)
 
-### 3.8 Dataset Scrapper
+### 3.8 [Dataset Scrapper](https://github.com/jaroslawjanas/imgflip-scrapper)
 This program runs entirely independently of the main python application. It was developed in JavaScript and run on NodeJs.
 
 #### 3.8.1 Config
