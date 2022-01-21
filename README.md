@@ -2,8 +2,9 @@
 
 # Final Year Project
 # _Meme Classification and Text Extraction_
-By Janas, Jaroslaw
-Project Supervisor: Dr. Finlay Smith
+**By Janas, Jaroslaw**
+
+_Project Supervisor: Dr. Finlay Smith_
 
 ## Glossary
 -	Meme – a media format composed of an image with superimposed text, generally used in a comedic setting.
